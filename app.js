@@ -1,16 +1,14 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const dotenv = require('dotenv');
-
+const express = require("express");
+const dotenv = require("dotenv");
+const connectDB = require("./config/db");
+const authRoutes = require("./routes/authRoutes");
 
 dotenv.config();
+connectDB();
 
 const app = express();
 app.use(express.json());
 
-// MongoDB connection
-mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log('Database connected'))
-    .catch(err => console.log('Database connection failed', err));
+app.use("/api/auth", authRoutes);
 
 module.exports = app;
