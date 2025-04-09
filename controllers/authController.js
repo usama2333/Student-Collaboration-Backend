@@ -56,8 +56,25 @@ const forgotPassword = async (req, res) => {
     user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
     await user.save();
 
-    const resetURL = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
-    const message = `<p>Click the link below to reset your password:</p><a href="${resetURL}">${resetURL}</a>`;
+    const resetURL = `http://localhost:3001/update-password/${resetToken}`;
+    const message = `
+  <!DOCTYPE html>
+  <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>Password Reset</title>
+    </head>
+    <body>
+      <p>Click the link below to reset your password:</p>
+      <p>
+        <a href="${resetURL}" target="_blank" style="color: blue; text-decoration: underline;">Click here to reset your password</a>
+      </p>
+    </body>
+  </html>
+`;
+
+  
+  
 
     await sendEmail({ to: user.email, subject: "Password Reset Request", text: message });
 
