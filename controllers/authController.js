@@ -26,20 +26,33 @@ const signup = async (req, res) => {
   }
 };
 
-// Login
 const login = async (req, res) => {
+  const { email, password } = req.body;
+
   try {
-    const { email, password } = req.body;
     const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
 
-    if (!user) return res.status(400).json({ message: "Invalid credentials" });
+    // Check if the password matches
+    const isMatch = await user.matchPassword(password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
+    // Create JWT token with user ID and role
+    const token = jwt.sign(
+      { userId: user._id, role: user.role },  // Include role in the token
+      process.env.JWT_SECRET, 
+      { expiresIn: "1h" }
+    );
 
-    res.json({ token: generateToken(user._id), userId: user._id });
+    // Return the token to the client
+    return res.status(200).json({ token });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
