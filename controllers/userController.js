@@ -58,9 +58,48 @@ const getAllUsers = async (req, res) => {
       return res.status(500).json({ message: "Server error", error });
     }
   };
+
+  // delete user
+  const deleteUser = async (req, res) => {
+    try {
+      const { userId } = req.params;
+  
+      const userToDelete = await User.findById(userId);
+      if (!userToDelete) {
+        return res.status(404).json({ message: "User not found" });
+      }
+  
+      const requesterRole = req.user.role;
+      const targetRole = userToDelete.role;
+  
+      // Restriction: Only superadmin can delete another superadmin
+      if (targetRole === "superadmin" && requesterRole !== "superadmin") {
+        return res.status(403).json({ message: "Only superadmin can delete another superadmin" });
+      }
+  
+      // Restriction: Only admin or superadmin can delete an admin
+      if (targetRole === "admin" && !(requesterRole === "admin" || requesterRole === "superadmin")) {
+        return res.status(403).json({ message: "Only admin or superadmin can delete an admin" });
+      }
+  
+      // Restriction: Only admin or superadmin can delete a user
+      if (targetRole === "user" && !(requesterRole === "admin" || requesterRole === "superadmin")) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+  
+      await User.findByIdAndDelete(userId);
+      return res.status(200).json({ message: "User deleted successfully" });
+  
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      return res.status(500).json({ message: "Server error", error });
+    }
+  };
+  
   
 
 module.exports = {
   updateUser,
   getAllUsers,
+  deleteUser
 };

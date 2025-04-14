@@ -69,7 +69,7 @@ const forgotPassword = async (req, res) => {
     user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
     await user.save();
 
-    const resetURL = `http://localhost:3001/update-password/${resetToken}`;
+    const resetURL = `http://localhost:3000/update-password/${resetToken}`;
     const message = `
   <!DOCTYPE html>
   <html>

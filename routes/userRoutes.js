@@ -1,7 +1,7 @@
 // /routes/userRoutes.js
 const express = require("express");
 const { protect, authenticateAdmin } = require("../middleware/authMiddleware");
-const { updateUser, getAllUsers } = require("../controllers/userController");
+const { updateUser, getAllUsers,deleteUser } = require("../controllers/userController");
 
 const router = express.Router();
 
@@ -10,5 +10,10 @@ router.post("/update", authenticateAdmin, updateUser);
 
 // GET route for retrieving all users (admin only)
 router.get("/", getAllUsers);
+
+// Delete user 
+// DELETE route for deleting a user (admin or superadmin only)
+router.delete("/:userId", authenticateAdmin, deleteUser);
+
 
 module.exports = router;

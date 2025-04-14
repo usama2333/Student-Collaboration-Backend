@@ -51,7 +51,7 @@ const authenticateAdmin = async (req, res, next) => {
 
     // Check if the user is an admin
     const user = await User.findById(decoded.userId);
-    if (!user || user.role !== "admin") {
+    if (!user || (user.role !== "admin" && user.role !== "superadmin")) {
       return res.status(403).json({ message: "Access denied" });
     }
 
