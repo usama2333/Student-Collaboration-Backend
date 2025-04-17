@@ -3,7 +3,10 @@ const dotenv = require("dotenv");
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
+const chatRoutes = require('./routes/chatRoutes');
+const messageRoutes = require('./routes/messageRoutes');
 const cors = require('cors');
+const path = require('path');
 
 dotenv.config();
 connectDB();
@@ -18,8 +21,16 @@ app.use(cors({
     credentials: true                
   }));
 
+  app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 app.use("/api/auth", authRoutes);
 // Routes
 app.use("/api/users", userRoutes);
+
+app.use('/api/chat', chatRoutes);
+
+app.use('/api/messages', messageRoutes);
+
+
 
 module.exports = app;
