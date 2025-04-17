@@ -23,6 +23,7 @@ out/
 coverage/
 temp/
 .cache/
+uploads/
 
 # Logs
 logs/

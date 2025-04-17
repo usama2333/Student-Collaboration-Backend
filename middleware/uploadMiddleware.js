@@ -1,6 +1,7 @@
 // middleware/uploadMiddleware.js
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -10,6 +11,10 @@ const storage = multer.diskStorage({
     } else if (file.mimetype.startsWith('audio/')) {
       folder = 'uploads/audio/';
     }
+
+    // Ensure the folder exists
+    fs.mkdirSync(folder, { recursive: true });
+
     cb(null, folder);
   },
   filename: (req, file, cb) => {
