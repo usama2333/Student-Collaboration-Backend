@@ -53,6 +53,28 @@ module.exports = (io) => {
       }
     });
 
+    // Delete message
+socket.on('delete_message', async ({ messageId, recipientId }) => {
+  try {
+    const message = await Message.findById(messageId);
+    if (!message) return;
+
+    if (message.sender.toString() !== socket.user._id.toString()) return;
+
+    await message.remove();
+
+    // Notify both users to update their UI
+    socket.emit('message_deleted', { messageId }); // sender
+    const recipientSocketId = connectedUsers.get(recipientId);
+    if (recipientSocketId) {
+      io.to(recipientSocketId).emit('message_deleted', { messageId });
+    }
+  } catch (err) {
+    console.error('Error deleting message:', err);
+  }
+});
+
+
     // Join room handler for group chat
     socket.on('join_room', (roomId) => {
       socket.join(roomId);
