@@ -100,6 +100,31 @@ socket.on('delete_message', async ({ messageId, recipientId }) => {
         console.log('Error sending group message:', err);
       }
     });
+    // socket.on('group_message', async ({ roomId, content, type, fileUrl }) => {
+    //   try {
+    //     const group = await Group.findById(roomId);
+    //     if (!group) return;
+    
+    //     const isMember = group.members.some(member =>
+    //       member.toString() === socket.user._id.toString()
+    //     );
+    //     if (!isMember) return;
+    
+    //     const message = new Message({
+    //       sender: socket.user._id,
+    //       room: group._id,
+    //       content,
+    //       type,
+    //       fileUrl,
+    //     });
+    //     await message.save();
+    
+    //     io.to(roomId).emit('group_message', message);
+    //   } catch (err) {
+    //     console.log('Error sending group message:', err);
+    //   }
+    // });
+    
 
     // Handle user disconnection
     socket.on('disconnect', () => {

@@ -6,7 +6,7 @@ const messageSchema = new mongoose.Schema({
   content: { type: String },
   type: { type: String, enum: ['text', 'image', 'audio', 'file'], default: 'text' },
   fileUrl: { type: String },
-  room: { type: String },
+  room: { type: mongoose.Schema.Types.ObjectId, ref: 'Group' },
 }, { timestamps: true });
 
 module.exports = mongoose.model('Message', messageSchema);

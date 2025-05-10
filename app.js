@@ -6,6 +6,7 @@ const userRoutes = require("./routes/userRoutes");
 const chatRoutes = require('./routes/chatRoutes');
 const messageRoutes = require('./routes/messageRoutes');
 const magicLinkRoutes = require("./routes/magicLinkRoutes");
+const groupRoutes = require('./routes/groupRoutes');
 const cors = require('cors');
 const path = require('path');
 
@@ -31,6 +32,8 @@ app.use("/api/users", userRoutes);
 app.use('/api/chat', chatRoutes);
 
 app.use('/api/messages', messageRoutes);
+
+app.use('/api/groups', groupRoutes);
 
 app.use("/api", magicLinkRoutes);
 
