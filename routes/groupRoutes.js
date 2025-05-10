@@ -115,6 +115,37 @@ router.delete('/:groupId', protect, async (req, res) => {
     }
 });
 
+router.put('/:groupId', protect, async (req, res) => {
+    const { groupId } = req.params;
+    const { name } = req.body;
+  
+    try {
+      const group = await Group.findById(groupId);
+  
+      if (!group) {
+        return res.status(404).json({ message: 'Group not found' });
+      }
+  
+      if (group.createdBy.toString() !== req.user._id.toString()) {
+        return res.status(403).json({ message: 'You are not authorized to update this group' });
+      }
+  
+      // Check for duplicate group name
+      const existingGroup = await Group.findOne({ name: new RegExp(`^${name}$`, 'i') });
+      if (existingGroup && existingGroup._id.toString() !== groupId) {
+        return res.status(400).json({ message: 'Group name already exists' });
+      }
+  
+      group.name = name;
+      await group.save();
+  
+      res.status(200).json({ message: 'Group name updated successfully', group });
+    } catch (error) {
+      console.error('Update group name error:', error);
+      res.status(500).json({ message: 'Failed to update group name' });
+    }
+  });
+
 
   
 
