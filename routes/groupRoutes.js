@@ -74,9 +74,9 @@ const message = await Message.findOne({ _id: messageId, room: groupId });
   
       if (!message) return res.status(404).json({ error: 'Message not found' });
   
-      if (message.sender.toString() !== userId.toString()) {
-        return res.status(403).json({ error: 'Not authorized to delete this message' });
-      }
+      // if (message.sender.toString() !== userId.toString()) {
+      //   return res.status(403).json({ error: 'Not authorized to delete this message' });
+      // }
   
       await Message.deleteOne({ _id: messageId });
   
