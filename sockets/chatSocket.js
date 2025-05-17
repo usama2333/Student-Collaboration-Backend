@@ -100,30 +100,34 @@ socket.on('delete_message', async ({ messageId, recipientId }) => {
         console.log('Error sending group message:', err);
       }
     });
-    // socket.on('group_message', async ({ roomId, content, type, fileUrl }) => {
-    //   try {
-    //     const group = await Group.findById(roomId);
-    //     if (!group) return;
-    
-    //     const isMember = group.members.some(member =>
-    //       member.toString() === socket.user._id.toString()
-    //     );
-    //     if (!isMember) return;
-    
-    //     const message = new Message({
-    //       sender: socket.user._id,
-    //       room: group._id,
-    //       content,
-    //       type,
-    //       fileUrl,
-    //     });
-    //     await message.save();
-    
-    //     io.to(roomId).emit('group_message', message);
-    //   } catch (err) {
-    //     console.log('Error sending group message:', err);
-    //   }
-    // });
+  
+    socket.on('audio_chunk', async ({ recipientId, blob, mimeType }) => {
+  try {
+    const buffer = Buffer.from(blob); // blob from frontend as base64 or binary
+    const filename = `${Date.now()}-${Math.round(Math.random() * 1e9)}.webm`;
+    const filePath = `uploads/audio/${filename}`;
+
+    // Save the file
+    fs.writeFileSync(filePath, buffer);
+
+    const message = new Message({
+      sender: socket.user._id,
+      recipients: [recipientId],
+      type: 'audio',
+      fileUrl: `${process.env.BASE_URL}/${filePath}`,
+    });
+
+    await message.save();
+
+    const recipientSocketId = connectedUsers.get(recipientId);
+    if (recipientSocketId) {
+      io.to(recipientSocketId).emit('private_message', message);
+    }
+  } catch (err) {
+    console.error('Error receiving audio chunk:', err);
+  }
+});
+
     
 
     // Handle user disconnection
