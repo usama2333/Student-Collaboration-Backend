@@ -74,5 +74,38 @@ const authenticateAdmin = async (req, res, next) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+// Authenticate User - Verifies token and attaches user to req.user
+const authenticateUser = async (req, res, next) => {
+  const token = extractToken(req);
+  if (!token) {
+    return res.status(401).json({ message: "No token, authorization denied" });
+  }
 
-module.exports = { protect, authenticateAdmin };
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    const storedToken = await Token.findOne({
+      token,
+      isActive: true,
+      userId: decoded.userId,
+    });
+
+    if (!storedToken) {
+      return res.status(401).json({ message: "Token is invalid or expired" });
+    }
+
+    const user = await User.findById(decoded.userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    req.user = user; // Attach the logged-in user
+    next();
+  } catch (error) {
+    console.error("Auth error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+module.exports = { protect, authenticateAdmin ,authenticateUser };

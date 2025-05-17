@@ -2,41 +2,60 @@
 const User = require("../models/userModel");
 
 // POST API for updating user information, including role and password (admin only)
+// POST API for updating user information, including role and password (admin or self-update)
 const updateUser = async (req, res) => {
-    try {
-      const { email, name, department, phone, cnic, address, imageUrl, role,dob } = req.body;
-      console.log('Received data:', req.body);
-      // Check if the user with the provided email exists
-      const userToUpdate = await User.findOne({ email });
-      if (!userToUpdate) {
-        return res.status(404).json({ message: "User not found" });
-      }
-  
-      // Update user details
-      userToUpdate.name = name || userToUpdate.name;
-      userToUpdate.department = department || userToUpdate.department;
-      userToUpdate.phone = phone || userToUpdate.phone;
-      userToUpdate.cnic = cnic || userToUpdate.cnic;
-      userToUpdate.address = address || userToUpdate.address;
-      userToUpdate.imageUrl = imageUrl || userToUpdate.imageUrl;
-      userToUpdate.dob = dob ? new Date(dob) : userToUpdate.dob;
-  
-      // Update role if provided and if the user is an admin
-      if (role) {
-        if (req.user.role !== "admin") {
-          return res.status(403).json({ message: "Only admins can change roles" });
-        }
-        userToUpdate.role = role;
-      }
-  
-      // Save updated user
-      await userToUpdate.save();
-  
-      return res.status(200).json({ message: "User updated successfully", user: userToUpdate });
-    } catch (error) {
-      return res.status(500).json({ message: "Server error", error });
+  try {
+    const { email, name, department, phone, cnic, address, imageUrl, role, dob } = req.body;
+    console.log('Received data:', req.body);
+
+    // Check if user with provided email exists
+    const userToUpdate = await User.findOne({ email });
+    if (!userToUpdate) {
+      return res.status(404).json({ message: "User not found" });
     }
-  };
+
+    // Check permission: either admin or self
+    const isAdmin = req.user.role === "admin";
+    const isSelf = req.user.email === email;
+
+    if (!isAdmin && !isSelf) {
+      return res.status(403).json({ message: "Not authorized to update this user" });
+    }
+
+    // Prevent setting a future date for DOB
+    if (dob) {
+      const dobDate = new Date(dob);
+      const today = new Date();
+
+      if (dobDate > today) {
+        return res.status(400).json({ message: "Date of birth cannot be in the future" });
+      }
+
+      userToUpdate.dob = dobDate;
+    }
+
+    // Update user details
+    userToUpdate.name = name || userToUpdate.name;
+    userToUpdate.department = department || userToUpdate.department;
+    userToUpdate.phone = phone || userToUpdate.phone;
+    userToUpdate.cnic = cnic || userToUpdate.cnic;
+    userToUpdate.address = address || userToUpdate.address;
+    userToUpdate.imageUrl = imageUrl || userToUpdate.imageUrl;
+
+    // Allow only admin to change role
+    if (role && isAdmin) {
+      userToUpdate.role = role;
+    }
+
+    await userToUpdate.save();
+
+    return res.status(200).json({ message: "User updated successfully", user: userToUpdate });
+
+  } catch (error) {
+    return res.status(500).json({ message: "Server error", error });
+  }
+};
+
   
 
 // GET API for retrieving all users
