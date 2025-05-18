@@ -16,9 +16,11 @@ const updateUser = async (req, res) => {
 
     // Check permission: either admin or self
     const isAdmin = req.user.role === "admin";
+    const isSuperAdmin = req.user.role === "superadmin";
     const isSelf = req.user.email === email;
 
-    if (!isAdmin && !isSelf) {
+  
+    if (!isAdmin && !isSuperAdmin && !isSelf) {
       return res.status(403).json({ message: "Not authorized to update this user" });
     }
 
@@ -43,7 +45,7 @@ const updateUser = async (req, res) => {
     userToUpdate.imageUrl = imageUrl || userToUpdate.imageUrl;
 
     // Allow only admin to change role
-    if (role && isAdmin) {
+    if (role && (isAdmin || isSuperAdmin)) {
       userToUpdate.role = role;
     }
 
