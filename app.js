@@ -7,6 +7,8 @@ const chatRoutes = require('./routes/chatRoutes');
 const messageRoutes = require('./routes/messageRoutes');
 const magicLinkRoutes = require("./routes/magicLinkRoutes");
 const groupRoutes = require('./routes/groupRoutes');
+const assignmentRoutes = require("./routes/assignmentRoutes");
+
 // const messageRoute = require("./routes/messageRoute");
 const cors = require('cors');
 const path = require('path');
@@ -39,6 +41,8 @@ app.use('/api/groups', groupRoutes);
 app.use("/api", magicLinkRoutes);
 
 // app.use("/api", messageRoute);
+
+app.use("/api/assignments", assignmentRoutes);
 
 
 
