@@ -1,4 +1,6 @@
+const { default: mongoose } = require("mongoose");
 const Assignment = require("../models/assignmentModel");
+
 
 // Create Assignment
 const createAssignment = async (req, res) => {
@@ -16,7 +18,8 @@ const createAssignment = async (req, res) => {
 // Get All Assignments
 const getAllAssignments = async (req, res) => {
   try {
-    const assignments = await Assignment.find().sort({ createdAt: -1 });
+    const userID = new mongoose.Types.ObjectId(req.body.userId)
+    const assignments = await Assignment.find({creator: userID}).sort({  completed: 1 }).populate('creator').exec();
     res.status(200).json(assignments);
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
@@ -33,7 +36,7 @@ const updateAssignment = async (req, res) => {
       return res.status(404).json({ message: "Assignment not found" });
     }
 
-    res.status(200).json({ message: "Assignment updated", assignment: updatedAssignment });
+    res.status(200).json({success:true, message: "Assignment updated", assignment: updatedAssignment });
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
   }
