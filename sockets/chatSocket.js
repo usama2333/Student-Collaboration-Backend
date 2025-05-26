@@ -84,18 +84,24 @@ socket.on('delete_message', async ({ messageId, recipientId }) => {
     // Group message handler
     socket.on('group_message', async ({ roomId, content, type, fileUrl }) => {
       try {
-        const message = new Message({
+        let message = new Message({
+          seen:false,
           sender: socket.user._id,
+          name:socket.user.name,
           room: roomId,
           content,
           type,
           fileUrl,
         });
+
+        
         await message.save();
+        let  rawMessage = message.toObject();
+        rawMessage.sender = await User.findById(socket.user._id)
         
         // Send the group message to all users in the room
         console.log(`Sending group message to room: ${roomId}`);
-        io.to(roomId).emit('group_message', message);
+        io.to(roomId).emit('group_message', rawMessage);
       } catch (err) {
         console.log('Error sending group message:', err);
       }

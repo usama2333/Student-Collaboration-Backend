@@ -1,5 +1,28 @@
 
 const User = require("../models/userModel");
+const Message = require("../models/messageModel");
+const mongoose= require('mongoose');
+
+
+const updateMessages = async(req, res) => {
+
+  try{
+
+const objectIds = req.body.newMessages.map(message => new mongoose.Types.ObjectId(message._id));
+
+    const result = await Message.updateMany(
+      { _id: { $in: objectIds } },
+      { $set: { seen: true } }
+    );
+
+    res.status(200).json({ message: "Messages updated successfully", result });
+
+  }catch(error){
+    return res.status(500).json({ message: "Server error", error });
+
+  }
+
+}
 
 // POST API for updating user information, including role and password (admin only)
 // POST API for updating user information, including role and password (admin or self-update)
@@ -64,15 +87,58 @@ const updateUser = async (req, res) => {
 const getAllUsers = async (req, res) => {
     try {
       // Find users who have all necessary fields filled out
-      const users = await User.find({
-        name: { $exists: true, $ne: "" },
-        email: { $exists: true, $ne: "" },
-        department: { $exists: true, $ne: "" },
-        phone: { $exists: true, $ne: "" },
-        cnic: { $exists: true, $ne: "" },
-        address: { $exists: true, $ne: "" },
-        dob: { $exists: true, $ne: null }
-      }).select("-password"); // Exclude password from response
+      // const users = await User.find({
+      //   name: { $exists: true, $ne: "" },
+      //   email: { $exists: true, $ne: "" },
+      //   department: { $exists: true, $ne: "" },
+      //   phone: { $exists: true, $ne: "" },
+      //   cnic: { $exists: true, $ne: "" },
+      //   address: { $exists: true, $ne: "" },
+      //   dob: { $exists: true, $ne: null }
+      // }).select("-password"); // Exclude password from response\
+
+
+const myUserId = new mongoose.Types.ObjectId(req.query.userId); // The logged-in user's ID
+
+const users = await User.aggregate([
+  // {
+  //   $match: {
+  //     name: { $exists: true, $ne: "" },
+  //     email: { $exists: true, $ne: "" },
+  //     department: { $exists: true, $ne: "" },
+  //     phone: { $exists: true, $ne: "" },
+  //     cnic: { $exists: true, $ne: "" },
+  //     address: { $exists: true, $ne: "" },
+  //     dob: { $exists: true, $ne: null }
+  //   }
+  // },
+  {
+    $lookup: {
+      from: "messages",
+      let: { senderId: "$_id" }, // each user being treated as sender
+      pipeline: [
+        {
+          $match: {
+            $expr: {
+              $and: [
+                { $eq: ["$sender", "$$senderId"] },      // this user is sender
+                { $in: [myUserId, "$recipients"] },      // current user is a recipient
+                { $eq: ["$seen", false] }                // optional: only unseen messages
+              ]
+            }
+          }
+        }
+      ],
+      as: "messagesToMe"
+    }
+  },
+  {
+    $project: {
+      password: 0
+    }
+  }
+]);
+
   
       return res.status(200).json({ users });
     } catch (error) {
@@ -120,6 +186,7 @@ const getAllUsers = async (req, res) => {
   
 
 module.exports = {
+  updateMessages,
   updateUser,
   getAllUsers,
   deleteUser

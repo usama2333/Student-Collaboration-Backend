@@ -85,8 +85,8 @@ const authenticateUser = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     const storedToken = await Token.findOne({
-      token,
-      isActive: true,
+      // token,
+      // isActive: true,
       userId: decoded.userId,
     });
 
